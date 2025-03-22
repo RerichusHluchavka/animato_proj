@@ -7,10 +7,16 @@
 </head>
 <body>
     <h1>Nahrát XML soubor</h1>
-    <form action="../php/upload.php" method="post" enctype="multipart/form-data">
+    <form action="../php/upload_products.php" method="post" enctype="multipart/form-data">
         <label for="xml_file">Vyberte XML soubor:</label>
         <input type="file" name="xml_file" id="xml_file" accept=".xml">
         <button type="submit">Nahrát</button>
+    </form>
+    <h1>Vytovřit objednávky</h1>
+    <form action="../php/create_orders.php" method="post" enctype="multipart/form-data">
+        <label for="xml_file">Počet objednável:</label>
+        <input type="number" name="count" id="count" min="0" value="0">
+        <button type="submit">Vytovřit</button>
     </form>
 </body>
 </html>

@@ -66,6 +66,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['xml_file'])) {
             ]);
         }
     }
+
+    header('Location: '. "../index.html");
+    die();
 } else {
     echo "Nebyl nahrán žádný soubor.";
 }
