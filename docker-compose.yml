@@ -7,15 +7,28 @@ services:
     volumes:
       - ./app:/var/www/html
     depends_on:
-      - db
-  db:
+      - db_produkty
+      - db_objednavky
+  db_produkty:
     image: mariadb:10.6
     environment:
       MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: eshop
+      MYSQL_DATABASE: productsDb
       MYSQL_USER: user
       MYSQL_PASSWORD: user
     ports:
       - "3306:3306"
     volumes:
-      - ./db:/docker-entrypoint-initdb.d
+      - ./db/produkty:/docker-entrypoint-initdb.d
+
+  db_objednavky:
+    image: mariadb:10.6
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ordersDb
+      MYSQL_USER: user
+      MYSQL_PASSWORD: user
+    ports:
+      - "3307:3306"
+    volumes:
+      - ./db/objednavky:/docker-entrypoint-initdb.d
