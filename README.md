@@ -1,1 +1,4 @@
-# animato_proj
+# Animato projek
+
+## Spuštění
+

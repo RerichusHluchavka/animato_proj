@@ -2,8 +2,41 @@
 
 declare(strict_types=1);
 
+function prepareProductPDO(): PDO
+{
+    $host_products = 'db_produkty';
+    $dbname_products = 'productsDb';
+    $user_products = 'user';
+    $password_products = 'user';
+
+    try {
+        $pdo_products = new PDO("mysql:host=$host_products;dbname=$dbname_products;charset=utf8", $user_products, $password_products);
+        $pdo_products->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        return $pdo_products;
+    } catch (PDOException $e) {
+        die("Chyba připojení k databázi produktů: " . $e->getMessage());
+    }
+}
+
+function prepareorOrdersPDO(): PDO
+{
+    $host_orders = 'db_objednavky';
+    $dbname_orders = 'ordersDb';
+    $user_orders = 'user';
+    $password_orders = 'user';
+
+    try {
+        $pdo_orders = new PDO("mysql:host=$host_orders;dbname=$dbname_orders;charset=utf8", $user_orders, $password_orders);
+        $pdo_orders->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        return $pdo_orders;
+    } catch (PDOException $e) {
+        die("Chyba připojení k databázi objednávek: " . $e->getMessage());
+    }
+} 
+
 function xmlPrepareOutputRoot(): SimpleXMLElement
 {
+    //responsePack
     $xml = new SimpleXMLElement('<rsp:responsePack xmlns:rsp="http://www.stormware.cz/schema/version_2/response.xsd" 
     xmlns:lst="http://www.stormware.cz/schema/version_2/list.xsd" 
     xmlns:ord="http://www.stormware.cz/schema/version_2/order.xsd" 
@@ -97,11 +130,13 @@ function xmlMakeOrderDetail($xml, $order, $pdo_products, $pdo_orders): void
     $stmt->execute([$order['id']]);
     $orderItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+    //foreach pro orderItems
     foreach ($orderItems as $orderItem) {
         $stmt = $pdo_products->prepare("SELECT * FROM products WHERE id = ?");
         $stmt->execute([$orderItem['product_id']]);
         $product = $stmt->fetch(PDO::FETCH_ASSOC);
 
+        //orderItem
         $xml_orderItem = $orderDetail->addChild('ord:orderItem');
         $xml_orderItem->addChild('ord:id', (string)$product['id']);
         $xml_orderItem->addChild('ord:text', $product['product_description']);
@@ -113,6 +148,7 @@ function xmlMakeOrderDetail($xml, $order, $pdo_products, $pdo_orders): void
         $xml_orderItem->addChild('ord:rateVAT', 'high');
         $xml_orderItem->addChild('ord:discountPercentage', "0.0");
 
+        //homeCurrency
         $homeCurrency = $xml_orderItem->addChild('ord:homeCurrency');
         $homeCurrency->addChild('typ:unitPrice', "2500");
         $homeCurrency->addChild('typ:price', "12500");
@@ -121,6 +157,7 @@ function xmlMakeOrderDetail($xml, $order, $pdo_products, $pdo_orders): void
 
         $xml_orderItem->addChild('ord:code', substr($product['product'], 0, 3) . $product['id']);
 
+        //stockItem
         $stockItem = $xml_orderItem->addChild('ord:stockItem');
         $store = $stockItem->addChild('typ:store', null, "http://www.stormware.cz/schema/version_2/type.xsd");
         $store->addChild('typ:id', "1");
@@ -133,10 +170,12 @@ function xmlMakeOrderDetail($xml, $order, $pdo_products, $pdo_orders): void
 
 function xmlMakeOrderSummary($xml): void
 {
+    //orderSummary
     $orderSummary = $xml->addChild('ord:orderSummary', null, "http://www.stormware.cz/schema/version_2/order.xsd");
     $orderSummary->addChild('ord:roundingDocument', 'none');
     $orderSummary->addChild('ord:roundingVAT', 'none');
 
+    //homeCurrency
     $homeCurrencySummary = $orderSummary->addChild('ord:homeCurrency');
     $homeCurrencySummary->addChild('typ:priceNone', "0", "http://www.stormware.cz/schema/version_2/type.xsd");
     $homeCurrencySummary->addChild('typ:priceLow', "0", "http://www.stormware.cz/schema/version_2/type.xsd");
@@ -160,29 +199,8 @@ function xmlMakeOrder($xml, $pdo_orders, $pdo_products, $order): void
     xmlMakeOrderSummary($xml);
 }
 
-$host_products = 'db_produkty';
-$dbname_products = 'productsDb';
-$user_products = 'user';
-$password_products = 'user';
-
-try {
-    $pdo_products = new PDO("mysql:host=$host_products;dbname=$dbname_products;charset=utf8", $user_products, $password_products);
-    $pdo_products->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) {
-    die("Chyba připojení k databázi produktů: " . $e->getMessage());
-}
-
-$host_orders = 'db_objednavky';
-$dbname_orders = 'ordersDb';
-$user_orders = 'user';
-$password_orders = 'user';
-
-try {
-    $pdo_orders = new PDO("mysql:host=$host_orders;dbname=$dbname_orders;charset=utf8", $user_orders, $password_orders);
-    $pdo_orders->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) {
-    die("Chyba připojení k databázi objednávek: " . $e->getMessage());
-}
+$pdo_orders = prepareorOrdersPDO();
+$pdo_products = prepareProductPDO();
 
 $dateFrom = $_GET['dateFrom'] ?? '1970-01-01';
 $dateTill = $_GET['dateTill'] ?? date('Y-m-d');
@@ -207,6 +225,7 @@ $listOrder->addAttribute('dateTimeStamp', '2011-05-27T10:48:25Z');
 $listOrder->addAttribute('dateValidFrom', '2011-05-27');
 $listOrder->addAttribute('state', 'ok');
 
+//foreach pro orders
 foreach ($orders as $order) {
 
     xmlMakeOrder($listOrder, $pdo_orders, $pdo_products, $order);

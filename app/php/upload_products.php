@@ -1,19 +1,28 @@
 <?php
 
 declare(strict_types=1);
-$host_products = 'db_produkty';
-$dbname_products = 'productsDb';
-$user_products = 'user';
-$password_products = 'user';
 
-try {
-    $pdo_products = new PDO("mysql:host=$host_products;dbname=$dbname_products;charset=utf8", $user_products, $password_products);
-    $pdo_products->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) {
-    die("Chyba připojení k databázi produktů: " . $e->getMessage());
+function prepareProductPDO(): PDO
+{
+    $host_products = 'db_produkty';
+    $dbname_products = 'productsDb';
+    $user_products = 'user';
+    $password_products = 'user';
+
+    try {
+        $pdo_products = new PDO("mysql:host=$host_products;dbname=$dbname_products;charset=utf8", $user_products, $password_products);
+        $pdo_products->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        return $pdo_products;
+    } catch (PDOException $e) {
+        die("Chyba připojení k databázi produktů: " . $e->getMessage());
+    }
 }
 
+
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['xml_file'])) {
+    $pdo_products = prepareProductPDO();
+
     $xmlFile = $_FILES['xml_file']['tmp_name'];
 
     if (!is_uploaded_file($xmlFile)) {
