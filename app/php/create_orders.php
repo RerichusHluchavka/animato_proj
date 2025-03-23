@@ -27,16 +27,16 @@ $stmt = $pdo_products->prepare("SELECT id  FROM products");
 $stmt->execute();
 $products = $stmt->fetchAll(PDO::FETCH_COLUMN);
 
-$host_products = 'db_objednavky';
-$dbname_products = 'ordersDb';
-$user_products = 'user';
-$password_products = 'user';
+$host_orders = 'db_objednavky';
+$dbname_orders = 'ordersDb';
+$user_orders = 'user';
+$password_orders = 'user';
 
 try {
-    $pdo_orders = new PDO("mysql:host=$host_products;dbname=$dbname_products;charset=utf8", $user_products, $password_products);
+    $pdo_orders = new PDO("mysql:host=$host_orders;dbname=$dbname_orders;charset=utf8", $user_orders, $password_orders);
     $pdo_orders->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 } catch (PDOException $e) {
-    die("Chyba připojení k databázi produktů: " . $e->getMessage());
+    die("Chyba připojení k databázi objednávek: " . $e->getMessage());
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['count'])) {
@@ -60,7 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['count'])) {
         $orderId = $pdo_orders->lastInsertId();
 
         for ($j = 0; $j < mt_rand(1,3); $j++) {
-            $product = array_rand($products, 1);
+            $product = $products[array_rand($products, 1)];
             $stmt = $pdo_orders->prepare("INSERT INTO order_items (order_id, product_id, quantity)
              VALUES (?, ?, ?)");
             $stmt->execute([
@@ -72,3 +72,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['count'])) {
 
     }
 }
+
+header('Location: '. "../index.html");
+die();

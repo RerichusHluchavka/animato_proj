@@ -18,5 +18,15 @@
         <input type="number" name="count" id="count" min="0" value="0">
         <button type="submit">Vytovřit</button>
     </form>
-</body>
+
+    <h1>Export objednávek</h1>
+    <form action="../php/export.php" method="get">
+        <label for="dateFrom">Datum od:</label>
+        <input type="date" id="dateFrom" name="dateFrom" required>
+
+        <label for="dateTill">Datum do:</label>
+        <input type="date" id="dateTill" name="dateTill" required>
+
+        <input type="submit" value="Exportovat">
+    </form></body>
 </html>
